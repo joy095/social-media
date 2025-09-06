@@ -1,0 +1,28 @@
+{
+  "name": "social-media-platform",
+  "version": "1.0.0",
+  "description": "Comprehensive social media platform with MERN stack",
+  "main": "server/server.js",
+  "scripts": {
+    "dev": "concurrently \"bun run server\" \"bun run client\"",
+    "start": "node start-dev.js",
+    "setup": "node setup-env.js",
+    "server": "cd server && bun run dev",
+    "client": "cd client && bun run dev",
+    "install-server": "cd server && bun install",
+    "install-client": "cd client && bun install",
+    "install-all": "bun run install-server && bun run install-client",
+    "build": "cd client && bun run build",
+    "build-server": "cd server && bun run build",
+    "type-check": "cd server && bun run type-check && cd ../client && bun run typecheck",
+    "test-r2": "cd server && npm run test-r2",
+    "migrate-r2": "cd server && npm run migrate-r2",
+    "heroku-postbuild": "bun run install-all && bun run build"
+  },
+  "keywords": ["social-media", "mern", "react", "nodejs", "mongodb"],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^7.6.0"
+  }
+}
