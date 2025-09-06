@@ -84,6 +84,7 @@ export default function Followers() {
                     className="h-12 w-12 rounded-full object-cover"
                     src={follower.profilePicture?.url || `https://ui-avatars.com/api/?name=${encodeURIComponent(follower.fullName)}&background=6366f1&color=ffffff&size=48`}
                     alt={follower.fullName}
+                    loading='lazy'
                   />
                   <div>
                     <Link

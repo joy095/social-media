@@ -249,6 +249,7 @@ export default function PostDetails() {
                 className="h-10 w-10 rounded-full object-cover"
                 src={user.profilePicture?.url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName)}&background=6366f1&color=ffffff&size=40`}
                 alt={user.fullName}
+                loading='lazy'
               />
               <div className="flex-1">
                 <textarea

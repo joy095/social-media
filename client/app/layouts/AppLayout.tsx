@@ -163,6 +163,7 @@ export default function AppLayout() {
                             `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.fullName || "User")}&background=6366f1&color=ffffff`
                           }
                           alt={user?.fullName}
+                          loading='lazy'
                         />
                       </div>
                       <div className="ml-3 flex-1">

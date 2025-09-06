@@ -42,7 +42,7 @@ export default function Search() {
   const performSearch = async (searchQuery: string) => {
     setIsLoading(true);
     setHasSearched(true);
-    
+
     try {
       if (activeTab === 'users') {
         const response = await usersAPI.searchUsers({ query: searchQuery, page: 1, limit: 20 });
@@ -79,7 +79,7 @@ export default function Search() {
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
           Search
         </h1>
-        
+
         {/* Search Input */}
         <div className="relative">
           <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -105,18 +105,17 @@ export default function Search() {
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center transition-colors ${
-                  activeTab === tab.key
+                className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center transition-colors ${activeTab === tab.key
                     ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
                     : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:border-gray-300'
-                }`}
+                  }`}
               >
                 <tab.icon className="mr-2" size={16} />
                 {tab.label}
                 {query && (
                   <span className="ml-2 px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full">
-                    {activeTab === tab.key ? 
-                      (activeTab === 'users' ? results.users.length : results.posts.length) : 
+                    {activeTab === tab.key ?
+                      (activeTab === 'users' ? results.users.length : results.posts.length) :
                       0
                     }
                   </span>
@@ -171,6 +170,7 @@ export default function Search() {
                         <img
                           className="h-12 w-12 rounded-full object-cover"
                           src={searchUser.profilePicture?.url || `https://ui-avatars.com/api/?name=${encodeURIComponent(searchUser.fullName)}&background=6366f1&color=ffffff&size=48`}
+                          loading='lazy'
                           alt={searchUser.fullName}
                         />
                         <div>
@@ -185,15 +185,15 @@ export default function Search() {
                           </p>
                           {searchUser.bio && (
                             <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
-                              {searchUser.bio.length > 100 
-                                ? `${searchUser.bio.substring(0, 100)}...` 
+                              {searchUser.bio.length > 100
+                                ? `${searchUser.bio.substring(0, 100)}...`
                                 : searchUser.bio
                               }
                             </p>
                           )}
                         </div>
                       </div>
-                      
+
                       {searchUser._id !== user?._id && (
                         <Link
                           to={`/profile/${searchUser._id}`}
@@ -203,7 +203,7 @@ export default function Search() {
                         </Link>
                       )}
                     </div>
-                    
+
                     <div className="flex items-center mt-3 space-x-4 text-sm text-gray-500 dark:text-gray-400">
                       <span>{searchUser.followersCount} followers</span>
                       <span>{searchUser.followingCount} following</span>
@@ -237,7 +237,7 @@ export default function Search() {
                   >
                     <PostCard
                       post={post}
-                      onLike={async () => {}}
+                      onLike={async () => { }}
                       showActions={true}
                     />
                   </motion.div>

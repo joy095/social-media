@@ -7,12 +7,15 @@ import {
   ScrollRestoration,
 } from "react-router";
 import type { ReactNode } from "react";
+import { Suspense, lazy } from "react";
 
 import type { Route } from "./+types/root";
-import { AuthProvider } from "~/contexts/AuthContext";
-import { ThemeProvider } from "~/contexts/ThemeContext";
-import { Toaster } from 'react-hot-toast';
 import "./app.css";
+
+// Lazy load contexts and toaster
+const AuthProvider = lazy(() => import("~/contexts/AuthContext").then(m => ({ default: m.AuthProvider })));
+const ThemeProvider = lazy(() => import("~/contexts/ThemeContext").then(m => ({ default: m.ThemeProvider })));
+const Toaster = lazy(() => import("react-hot-toast").then(m => ({ default: m.Toaster })));
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -47,21 +50,23 @@ export function Layout({ children }: { children: ReactNode }) {
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <Outlet />
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            duration: 4000,
-            style: {
-              background: 'var(--toast-bg)',
-              color: 'var(--toast-color)',
-            },
-          }}
-        />
-      </AuthProvider>
-    </ThemeProvider>
+    <Suspense fallback={<div className="p-4 text-center">Loading app...</div>}>
+      <ThemeProvider>
+        <AuthProvider>
+          <Outlet />
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              duration: 4000,
+              style: {
+                background: "var(--toast-bg)",
+                color: "var(--toast-color)",
+              },
+            }}
+          />
+        </AuthProvider>
+      </ThemeProvider>
+    </Suspense>
   );
 }
 

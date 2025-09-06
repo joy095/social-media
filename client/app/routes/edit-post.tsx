@@ -293,6 +293,7 @@ export default function EditPost() {
             className="h-12 w-12 rounded-full object-cover"
             src={user.profilePicture?.url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName)}&background=6366f1&color=ffffff&size=48`}
             alt={user.fullName}
+            loading='lazy'
           />
           <div className="ml-3">
             <p className="text-sm font-medium text-gray-900 dark:text-white">
@@ -333,6 +334,7 @@ export default function EditPost() {
                     src={image.url}
                     alt={`Existing ${index + 1}`}
                     className="w-full h-32 object-cover rounded-lg"
+                    loading='lazy'
                   />
                   <button
                     type="button"
@@ -364,6 +366,7 @@ export default function EditPost() {
                     src={url}
                     alt={`Preview ${index + 1}`}
                     className="w-full h-32 object-cover rounded-lg"
+                    loading='lazy'
                   />
                   <button
                     type="button"

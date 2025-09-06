@@ -278,6 +278,7 @@ export default function Home() {
                           className="h-10 w-10 rounded-full object-cover"
                           src={suggestion.profilePicture?.url || `https://ui-avatars.com/api/?name=${encodeURIComponent(suggestion.fullName)}&background=6366f1&color=ffffff`}
                           alt={suggestion.fullName}
+                          loading='lazy'
                         />
                       </Link>
                       <div>

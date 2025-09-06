@@ -190,6 +190,7 @@ export default function Profile() {
               className="h-24 w-24 rounded-full object-cover border-4 border-gray-200 dark:border-gray-600"
               src={user.profilePicture?.url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName)}&background=6366f1&color=ffffff&size=96`}
               alt={user.fullName}
+              loading='lazy'
             />
           </div>
 

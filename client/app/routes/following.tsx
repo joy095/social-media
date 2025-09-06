@@ -84,6 +84,7 @@ export default function Following() {
                     className="h-12 w-12 rounded-full object-cover"
                     src={user.profilePicture?.url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName)}&background=6366f1&color=ffffff&size=48`}
                     alt={user.fullName}
+                    loading='lazy'
                   />
                   <div>
                     <Link

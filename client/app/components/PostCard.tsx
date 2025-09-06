@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router';
-import { 
-  Heart, 
-  MessageCircle, 
-  Share2, 
-  MoreHorizontal, 
-  Edit3, 
-  Trash2, 
+import {
+  Heart,
+  MessageCircle,
+  Share2,
+  MoreHorizontal,
+  Edit3,
+  Trash2,
   Eye,
   MapPin,
   Play
@@ -25,12 +25,12 @@ interface PostCardProps {
   showActions?: boolean;
 }
 
-export const PostCard: React.FC<PostCardProps> = ({ 
-  post, 
-  onLike, 
-  onDelete, 
+export const PostCard: React.FC<PostCardProps> = ({
+  post,
+  onLike,
+  onDelete,
   onEdit,
-  showActions = true 
+  showActions = true
 }) => {
   const { user } = useAuth();
   const [isLiked, setIsLiked] = useState(post.isLikedByUser || false);
@@ -73,10 +73,10 @@ export const PostCard: React.FC<PostCardProps> = ({
     try {
       const newIsLiked = !isLiked;
       const newCount = newIsLiked ? likesCount + 1 : likesCount - 1;
-      
+
       setIsLiked(newIsLiked);
       setLikesCount(newCount);
-      
+
       if (onLike) {
         onLike(post._id, newIsLiked);
       }
@@ -133,10 +133,11 @@ export const PostCard: React.FC<PostCardProps> = ({
                 className="h-10 w-10 rounded-full object-cover"
                 src={post.author.profilePicture?.url || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.author.fullName)}&background=6366f1&color=ffffff`}
                 alt={post.author.fullName}
+                loading='lazy'
               />
             </Link>
             <div>
-              <Link 
+              <Link
                 to={`/profile/${post.author._id}`}
                 className="font-semibold text-gray-900 dark:text-white hover:underline"
               >
@@ -158,7 +159,7 @@ export const PostCard: React.FC<PostCardProps> = ({
               </div>
             </div>
           </div>
-          
+
           {showActions && (canEdit || canDelete) && (
             <div className="relative">
               <button
@@ -167,7 +168,7 @@ export const PostCard: React.FC<PostCardProps> = ({
               >
                 <MoreHorizontal size={20} />
               </button>
-              
+
               <AnimatePresence>
                 {showMenu && (
                   <motion.div
@@ -219,6 +220,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                   src={post.media[0].url}
                   alt="Post media"
                   className="w-full max-h-96 object-cover"
+                  loading='lazy'
                 />
               ) : (
                 <div className="relative">
@@ -245,6 +247,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                       src={media.url}
                       alt={`Post media ${index + 1}`}
                       className="w-full h-48 object-cover"
+                      loading='lazy'
                     />
                   ) : (
                     <div className="relative">
@@ -252,6 +255,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                         src={media.thumbnail}
                         alt={`Video thumbnail ${index + 1}`}
                         className="w-full h-48 object-cover"
+                        loading='lazy'
                       />
                       <div className="absolute inset-0 flex items-center justify-center">
                         <div className="bg-black bg-opacity-50 rounded-full p-2">
@@ -281,32 +285,31 @@ export const PostCard: React.FC<PostCardProps> = ({
             <div className="flex items-center space-x-4">
               <button
                 onClick={handleLike}
-                className={`flex items-center space-x-2 ${
-                  isLiked 
-                    ? 'text-red-500' 
-                    : 'text-gray-500 dark:text-gray-400 hover:text-red-500'
-                }`}
+                className={`flex items-center space-x-2 ${isLiked
+                  ? 'text-red-500'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-red-500'
+                  }`}
               >
                 <motion.div
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <Heart 
-                    size={20} 
+                  <Heart
+                    size={20}
                     fill={isLiked ? 'currentColor' : 'none'}
                   />
                 </motion.div>
                 <span className="text-sm font-medium">{likesCount}</span>
               </button>
-              
-              <Link 
+
+              <Link
                 to={`/post/${post._id}`}
                 className="flex items-center space-x-2 text-gray-500 dark:text-gray-400 hover:text-blue-500"
               >
                 <MessageCircle size={20} />
                 <span className="text-sm font-medium">{post.commentsCount}</span>
               </Link>
-              
+
               <button
                 onClick={handleShare}
                 className="flex items-center space-x-2 text-gray-500 dark:text-gray-400 hover:text-green-500"
@@ -314,7 +317,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                 <Share2 size={20} />
               </button>
             </div>
-            
+
             <div className="flex items-center space-x-2 text-gray-500 dark:text-gray-400 text-sm">
               <Eye size={16} />
               <span>{post.viewsCount}</span>
