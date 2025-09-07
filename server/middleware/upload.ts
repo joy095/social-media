@@ -8,22 +8,39 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Create uploads directory if it doesn't exist
+// Create uploads directory structure if it doesn't exist
 const uploadsDir = path.join(__dirname, '../uploads');
-const tempDir = path.join(uploadsDir, 'temp');
+const imagesDir = path.join(uploadsDir, 'images');
+const videosDir = path.join(uploadsDir, 'videos');
+const profilesDir = path.join(uploadsDir, 'profiles');
 
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-if (!fs.existsSync(tempDir)) {
-  fs.mkdirSync(tempDir, { recursive: true });
+if (!fs.existsSync(imagesDir)) {
+  fs.mkdirSync(imagesDir, { recursive: true });
 }
 
-// Configure storage
+if (!fs.existsSync(videosDir)) {
+  fs.mkdirSync(videosDir, { recursive: true });
+}
+
+if (!fs.existsSync(profilesDir)) {
+  fs.mkdirSync(profilesDir, { recursive: true });
+}
+
+// Configure storage for permanent local storage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, tempDir);
+    // Determine destination based on file type and field
+    if (file.fieldname === 'profilePicture') {
+      cb(null, profilesDir);
+    } else if (file.mimetype.startsWith('video/')) {
+      cb(null, videosDir);
+    } else {
+      cb(null, imagesDir);
+    }
   },
   filename: (req, file, cb) => {
     // Create unique filename

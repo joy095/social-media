@@ -111,17 +111,17 @@ userSchema.index({ isActive: 1 });
 
 // Virtual for followers count
 userSchema.virtual('followersCount').get(function () {
-  return this.followers.length;
+  return this.followers ? this.followers.length : 0;
 });
 
 // Virtual for following count
 userSchema.virtual('followingCount').get(function () {
-  return this.following.length;
+  return this.following ? this.following.length : 0;
 });
 
 // Virtual for posts count
 userSchema.virtual('postsCount').get(function () {
-  return this.posts.length;
+  return this.posts ? this.posts.length : 0;
 });
 
 // Hash password before saving
@@ -148,11 +148,14 @@ userSchema.methods.updateLastActive = function () {
 
 // Check if user is following another user
 userSchema.methods.isFollowing = function (userId: any) {
-  return this.following.includes(userId);
+  return this.following && this.following.includes(userId);
 };
 
 // Follow a user
 userSchema.methods.follow = async function (userId: any) {
+  if (!this.following) {
+    this.following = [];
+  }
   if (!this.following.includes(userId)) {
     this.following.push(userId);
     await this.save();
@@ -166,13 +169,15 @@ userSchema.methods.follow = async function (userId: any) {
 
 // Unfollow a user
 userSchema.methods.unfollow = async function (userId: any) {
-  this.following = this.following.filter((id: any) => !id.equals(userId));
-  await this.save();
+  if (this.following) {
+    this.following = this.following.filter((id: any) => !id.equals(userId));
+    await this.save();
 
-  // Remove this user from the target user's followers
-  await mongoose.model('User').findByIdAndUpdate(userId, {
-    $pull: { followers: this._id }
-  });
+    // Remove this user from the target user's followers
+    await mongoose.model('User').findByIdAndUpdate(userId, {
+      $pull: { followers: this._id }
+    });
+  }
 };
 
 // Remove sensitive information when converting to JSON

@@ -1,4 +1,4 @@
-import express, { NextFunction } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import { query, validationResult } from 'express-validator';
 import { User } from '../models/User';
 import { protect, optionalAuth } from '../middleware/auth';

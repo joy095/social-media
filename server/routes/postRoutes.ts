@@ -33,6 +33,14 @@ router.get('/', [
   rateLimiter.general
 ], postController.getPosts);
 
+// @desc    Search posts
+// @route   GET /api/posts/search
+// @access  Private
+router.get('/search', [
+  protect,
+  rateLimiter.general
+], postController.searchPosts);
+
 // @desc    Get single post
 // @route   GET /api/posts/:id
 // @access  Private

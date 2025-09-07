@@ -5,13 +5,14 @@ import { User } from "../models/User";
 import { Revenue } from "../models/Revenue";
 import { AuthRequest } from "../middleware/auth";
 import {
-  deleteFromR2,
-  uploadToR2,
-  uploadVideoToR2,
-} from "../utils/r2";
+  deleteFromLocal,
+  uploadToLocal,
+  uploadVideoToLocal,
+} from "../utils/localStorage";
 import { processVideo } from "../utils/videoProcessor";
 import { getRandomCity } from "../utils/cities";
 import fs from "fs";
+import path from "path";
 
 function safeUnlink(filePath: string) {
   try {
@@ -58,36 +59,41 @@ class PostController {
             };
 
             if (mediaItem.type === "image") {
-              const uploadResult = await uploadToR2(file.path);
-              mediaItem.url = uploadResult.secure_url;
-              mediaItem.publicId = uploadResult.public_id;
+              // For images, the file is already in the correct location from multer
+              const relativePath = path.relative(process.cwd(), file.path);
+              mediaItem.url = `/uploads/images/${path.basename(file.path)}`;
+              mediaItem.publicId = relativePath;
             } else if (mediaItem.type === "video") {
               const processedVideo = await processVideo(file.path);
 
               try {
-                const uploadResult = await uploadVideoToR2(
-                  processedVideo.videoPath
-                );
-                mediaItem.url = uploadResult.secure_url;
-                mediaItem.publicId = uploadResult.public_id;
+                // Move processed video to videos directory
+                const videoFilename = path.basename(processedVideo.videoPath);
+                const videoDestPath = path.join(process.cwd(), 'uploads', 'videos', videoFilename);
+                await fs.promises.copyFile(processedVideo.videoPath, videoDestPath);
+                
+                mediaItem.url = `/uploads/videos/${videoFilename}`;
+                mediaItem.publicId = `uploads/videos/${videoFilename}`;
                 mediaItem.duration = processedVideo.duration;
 
                 if (processedVideo.thumbnailPath) {
-                  const thumbnailResult = await uploadToR2(
-                    processedVideo.thumbnailPath
-                  );
-                  mediaItem.thumbnail = thumbnailResult.secure_url;
+                  // Move thumbnail to images directory
+                  const thumbnailFilename = path.basename(processedVideo.thumbnailPath);
+                  const thumbnailDestPath = path.join(process.cwd(), 'uploads', 'images', thumbnailFilename);
+                  await fs.promises.copyFile(processedVideo.thumbnailPath, thumbnailDestPath);
+                  
+                  mediaItem.thumbnail = `/uploads/images/${thumbnailFilename}`;
                   safeUnlink(processedVideo.thumbnailPath);
                 }
               } catch (uploadError: any) {
-                console.error("Video upload error:", uploadError.message);
-                throw new Error(`Failed to upload video: ${uploadError.message}`);
+                console.error("Video processing error:", uploadError.message);
+                throw new Error(`Failed to process video: ${uploadError.message}`);
               } finally {
                 safeUnlink(processedVideo.videoPath);
               }
             }
 
-            safeUnlink(file.path);
+            // No need to delete file.path as it's now in the permanent location
             return mediaItem;
           } catch (uploadError) {
             safeUnlink(file.path);
@@ -101,10 +107,10 @@ class PostController {
         } catch (uploadError) {
           mediaFiles.forEach((file) => {
             try {
-              deleteFromR2(file.publicId);
+              deleteFromLocal(file.publicId);
             } catch (cleanupError) {
               console.error(
-                `Failed to cleanup R2 file ${file.publicId}:`,
+                `Failed to cleanup local file ${file.publicId}:`,
                 cleanupError
               );
             }
@@ -242,6 +248,129 @@ class PostController {
       });
     } catch (error) {
       next(error);
+    }
+  }
+
+  // @desc    Search posts
+  // @route   GET /api/posts/search
+  // @access  Private
+  async searchPosts(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const skip = (page - 1) * limit;
+      const query = req.query.query as string;
+
+      if (!query || query.trim().length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Search query is required",
+        });
+      }
+
+      // Use aggregation pipeline for search
+      const user = await User.findById(req.user.id).select("following");
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: "User not found",
+        });
+      }
+
+      const pipeline = [
+        {
+          $match: {
+            isActive: true,
+            $or: [
+              { content: { $regex: query, $options: 'i' } },
+              { location: { $regex: query, $options: 'i' } }
+            ],
+            $or: [
+              { visibility: "public" },
+              {
+                visibility: "followers",
+                author: { $in: user.following || [] },
+              },
+              { author: req.user.id },
+            ],
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "author",
+            foreignField: "_id",
+            as: "author",
+          },
+        },
+        {
+          $unwind: "$author",
+        },
+        {
+          $project: {
+            "author.password": 0,
+            "author.email": 0,
+          },
+        },
+        {
+          $sort: { createdAt: -1 },
+        },
+        {
+          $skip: skip,
+        },
+        {
+          $limit: limit,
+        },
+      ];
+
+      const posts = await Post.aggregate(pipeline);
+
+      // Add user interaction flags
+      const postsWithInteraction = posts.map((post) => ({
+        ...post,
+        isLikedByUser:
+          post.likes?.some(
+            (like: any) => like.user?.toString() === req.user.id.toString()
+          ) || false,
+        userHasViewed:
+          post.views?.some(
+            (view: any) => view.user?.toString() === req.user.id.toString()
+          ) || false,
+      }));
+
+      const totalPosts = await Post.countDocuments({
+        isActive: true,
+        $or: [
+          { content: { $regex: query, $options: 'i' } },
+          { location: { $regex: query, $options: 'i' } }
+        ],
+        $or: [
+          { visibility: "public" },
+          {
+            visibility: "followers",
+            author: { $in: user.following || [] },
+          },
+          { author: req.user.id },
+        ],
+      });
+
+      res.status(200).json({
+        success: true,
+        data: postsWithInteraction,
+        pagination: {
+          page,
+          limit,
+          total: totalPosts,
+          pages: Math.ceil(totalPosts / limit),
+          hasMore: skip + posts.length < totalPosts,
+        },
+      });
+    } catch (error: any) {
+      console.error("Search posts error:", error.message);
+      res.status(500).json({
+        success: false,
+        message: "Failed to search posts",
+      });
     }
   }
 

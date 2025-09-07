@@ -192,6 +192,9 @@ export const postsAPI = {
 
   getUserPosts: (userId: string, params?: { page?: number; limit?: number }): Promise<AxiosResponse<ApiResponse<Post[]>>> =>
     api.get(`/posts/user/${userId}`, { params }),
+
+  searchPosts: (params: { query: string; page?: number; limit?: number }): Promise<AxiosResponse<ApiResponse<Post[]>>> =>
+    api.get('/posts/search', { params }),
 };
 
 // Social API

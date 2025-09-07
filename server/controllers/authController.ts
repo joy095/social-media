@@ -2,9 +2,10 @@ import { Request, Response, NextFunction } from "express";
 import { validationResult } from "express-validator";
 import { User } from "../models/User.js";
 import { generateToken, sendTokenResponse } from "../utils/generateToken";
-import { uploadToR2 } from "../utils/r2";
+import { uploadToLocal } from "../utils/localStorage";
 import { AuthRequest } from "../middleware/auth";
 import fs from "fs";
+import path from "path";
 import logger from "utils/logger.js";
 
 class AuthController {
@@ -143,21 +144,21 @@ class AuthController {
       // Handle profile picture upload
       if (req.file) {
         try {
-          const uploadResult = await uploadToR2(req.file.path);
+          // For profile pictures, the file is already in the correct location from multer
+          const relativePath = path.relative(process.cwd(), req.file.path);
           updateData.profilePicture = {
-            url: uploadResult.secure_url,
-            publicId: uploadResult.public_id,
+            url: `/uploads/profiles/${path.basename(req.file.path)}`,
+            publicId: relativePath,
           };
 
-          // Clean up temporary file
-          fs.unlinkSync(req.file.path);
+          // No need to clean up file as it's now in permanent location
         } catch (uploadError) {
-          // Clean up temporary file even if upload fails
+          // Clean up file if there was an error
           if (req.file && req.file.path) {
             try {
               fs.unlinkSync(req.file.path);
             } catch (fsError) {
-              console.error("Error deleting temporary file:", fsError);
+              console.error("Error deleting file:", fsError);
             }
           }
           throw uploadError;

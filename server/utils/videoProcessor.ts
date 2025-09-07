@@ -214,7 +214,7 @@ export const convertVideoFormat = (
         console.log('Converting video with command: ' + commandLine);
       })
       .on('progress', (progress) => {
-        console.log('Converting: ' + Math.round(progress.percent) + '% done');
+        console.log('Converting: ' + Math.round(progress.percent ?? 0) + '% done');
       })
       .on('end', () => {
         console.log('Video conversion finished successfully');
